@@ -1,6 +1,6 @@
 /**
  * 网页接口代理地址。
- * 部署 worker/worker.js 后，把 Cloudflare Worker 地址填在这里，例如：
- * window.BANBAN_WEB_API_BASE = "https://banban-api.example.workers.dev";
+ * 已按当前 Cloudflare Worker 地址填写。
+ * 如果重新部署了新的 Worker，修改这里即可。
  */
 window.BANBAN_WEB_API_BASE = "https://dry-brook-757e.cheyiem.workers.dev";

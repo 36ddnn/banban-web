@@ -228,3 +228,111 @@ body.wg-locked {
   font-size: 9px;
   line-height: 1.6;
 }
+
+/* 网页端手动配置解析接口 */
+.web-api-manual {
+  margin: 12px 0 0;
+  padding: 14px;
+  border: 1px solid rgba(20, 60, 52, 0.12);
+  border-radius: 12px;
+  background: rgba(20, 60, 52, 0.04);
+}
+
+.web-api-manual-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.web-api-manual-head h3 {
+  margin: 0;
+  color: #192b25;
+  font-size: 12px;
+}
+
+.web-api-manual-head span {
+  color: #7e8a83;
+  font-size: 8px;
+}
+
+.web-api-manual-copy {
+  margin: 8px 0 0;
+  color: #43544d;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.web-api-manual-steps {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0;
+  padding-left: 16px;
+  color: #43544d;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.web-api-manual-steps b {
+  color: #192b25;
+}
+
+.web-api-manual-link {
+  display: inline-flex;
+  margin: 2px 0 10px;
+  color: #143c34;
+  font-size: 9px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.web-api-endpoint-example {
+  display: block;
+  margin: 0 0 10px;
+  padding: 8px;
+  border: 1px solid rgba(20, 60, 52, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.75);
+  color: #43544d;
+  font-size: 8px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.web-api-endpoint-field {
+  display: grid;
+  gap: 6px;
+  color: #192b25;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.web-api-endpoint-field input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(20, 60, 52, 0.18);
+  border-radius: 10px;
+  background: #fffcf6;
+  color: #192b25;
+  font-family: inherit;
+  font-size: 10px;
+}
+
+.web-api-endpoint-save {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.web-api-endpoint-status {
+  min-height: 16px;
+  margin: 8px 0 0;
+  color: #43544d;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.web-api-endpoint-status.is-error {
+  color: #b3261e;
+}

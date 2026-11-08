@@ -157,24 +157,24 @@ http://localhost:8000/
 
 这是一个纯网页版本，排班、待办、统计、一言、个人资料、主题和大部分本地功能都可以使用。
 
-以下功能依赖 Android WebView 原生桥接，在纯网页端不可用：
+网页端仅保留给 iPhone / iPad 使用。其他设备会强制要求下载安卓 App。
 
-- 短视频解析接口登录、注册和解析
+iPhone 网页端也不提供注册和登录，需要手动粘贴一次解析接口地址。
+
+以下功能仍依赖 Android WebView 原生桥接，在 iPhone 网页端不可用：
+
 - 保存视频/图片到 Android 本地文件
 - Android 小组件
 - 系统级通知、精确闹钟
 - 原生文件导入/导出
-
-这些按钮在网页端会提示当前环境不支持，属正常现象。
 
 ## 访问提示
 
 网页端会根据访问设备显示不同提示：
 
 - Android App 内访问：不显示任何提示
-- Windows 浏览器：提示网页端部分功能不可用，并提供 App 下载入口
 - iPhone / iPad 首次访问：显示「添加到主屏幕」引导，关闭后不再重复
-- Android 浏览器：显示下载 App 的强制提示，不提供继续使用网页的按钮
+- Windows、Android 浏览器及其他非苹果手机设备：强制显示下载安卓 App 提示，不提供继续使用网页的按钮
 
 这些提示文件是：
 
@@ -185,9 +185,38 @@ web-guard.css
 
 已经接入 `index.html` 和 `sw.js`，不需要额外配置。
 
-## 网页端手动注册（Cloudflare Worker）
+## iPhone 网页端手动配置接口
 
-网页端直接请求 `api.videoparse.cn` 会被 CORS 拦截，所以需要先部署一个很小的一次性 Worker。
+网页端不再提供注册和登录按钮，避免出现「登录成功但没有读取到 UID / KEY」和一直卡在注册中的问题。
+
+在 iPhone 上打开：
+
+```text
+调整接口
+```
+
+页面会显示「手动配置解析接口」：
+
+1. 打开接口官网注册 / 登录
+
+```text
+https://api.videoparse.cn/user/login
+```
+
+2. 进入用户中心，找到 `UID` 和 `KEY`
+3. 复制解析接口地址，或者按格式拼接：
+
+```text
+https://api.videoparse.cn/home/api?type=dsp&uid=你的UID&key=你的KEY&url=
+```
+
+4. 粘贴到「解析接口地址」输入框并保存
+
+保存后重新打开短视频解析，就可以使用这个接口。
+
+### Worker 仍然需要
+
+浏览器直接请求接口会被 CORS 拦截，解析请求仍需要通过 Cloudflare Worker 转发。
 
 文件：
 
@@ -196,31 +225,23 @@ worker/worker.js
 worker/README.md
 web-api-config.js
 web-api-shim.js
-web-account.js
 ```
 
-部署步骤：
-
-1. Cloudflare Dashboard
-2. Workers & Pages → Create Worker
-3. 粘贴 `worker/worker.js`
-4. 部署并复制 Worker 地址
-5. 打开 `web-api-config.js`，填入：
+部署 Worker 后，把地址填到 `web-api-config.js`：
 
 ```js
 window.BANBAN_WEB_API_BASE = "https://你的-worker.workers.dev";
 ```
 
-6. 重新上传网页
+当前文件已填写：
 
-配置完成后，非 Android App 访问网页时：
+```text
+https://dry-brook-757e.cheyiem.workers.dev
+```
 
-- 注册输入框可以手动填写
-- 一键注册按钮改为「注册接口」
-- 注册成功后自动登录并保存账号
-- 登录后解析接口也会通过 Worker 转发
+如果重新部署了新的 Worker，改掉这一行并重新上传即可。
 
-如果暂时不配置 Worker，网页仍可正常浏览，但手动注册会提示「网页接口代理未配置」。
+如果暂时不配置 Worker，网页可以打开，但解析请求会提示「网页接口代理未配置」。
 
 ## 更新网页
 

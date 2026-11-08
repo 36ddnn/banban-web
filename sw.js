@@ -1,5 +1,5 @@
 /* 班伴 BANBAN — offline shell */
-const CACHE_NAME = "banban-shell-v2.2.35-web4";
+const CACHE_NAME = "banban-shell-v2.2.35-web6";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -14,9 +14,9 @@ const SHELL_ASSETS = [
   "./icons/wechat-qr.jpg",
   "./icons/download-qr.png",
   "./web-guard.css?v=2",
-  "./web-guard.js?v=2",
+  "./web-guard.js?v=3",
   "./web-api-shim.js?v=2",
-  "./web-account.js?v=2",
+  "./web-account.js?v=3",
 ];
 
 self.addEventListener("install", (event) => {

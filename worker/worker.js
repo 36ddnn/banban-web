@@ -26,9 +26,11 @@ function copyCookies(apiResponse, responseHeaders) {
     if (raw) cookies = raw.split(/,(?=[^;=]+\s*=)/);
   }
   cookies.forEach((cookie) => {
-    const cleaned = cookie
+    let cleaned = cookie
       .replace(/;\s*Domain=[^;]+/gi, "")
-      .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+      .replace(/;\s*SameSite=[^;]+/gi, "");
+    if (!/;\s*Secure/i.test(cleaned)) cleaned += "; Secure";
+    cleaned += "; SameSite=None";
     responseHeaders.append("Set-Cookie", cleaned);
   });
 }

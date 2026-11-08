@@ -3,25 +3,19 @@
 
   if (!window.__BANBAN_WEB_SHIM) return;
 
-  var configured = /^https?:\/\//i.test(String(window.BANBAN_WEB_API_BASE || ""));
-  var manualHandler = null;
+  var API_SITE = "https://api.videoparse.cn/user/login";
+  var ENDPOINT_PREFIX = "https://api.videoparse.cn/home/api";
 
-  function setStatus(message, isError) {
-    var node = document.querySelector("#videoApiRegisterStatus");
+  function setStatus(node, message, isError) {
     if (!node) return;
     node.textContent = message || "";
     node.classList.toggle("is-error", Boolean(isError));
   }
 
-  function setButton(button, text, disabled) {
-    if (!button) return;
-    button.textContent = text;
-    button.disabled = Boolean(disabled);
-  }
-
-  function endpoint(uid, key) {
+  function endpointFrom(uid, key) {
     return (
-      "https://api.videoparse.cn/home/api?type=dsp&uid=" +
+      ENDPOINT_PREFIX +
+      "?type=dsp&uid=" +
       encodeURIComponent(uid) +
       "&key=" +
       encodeURIComponent(key) +
@@ -29,139 +23,104 @@
     );
   }
 
-  function finishRegistration(api, credentials) {
+  function parseEndpoint(value) {
+    var text = String(value || "").trim();
+    if (!text) return { error: "请先粘贴接口地址" };
+    var url;
+    try {
+      url = new URL(text);
+    } catch (error) {
+      return { error: "接口地址格式不正确" };
+    }
+    if (url.hostname !== "api.videoparse.cn" || url.pathname !== "/home/api") {
+      return { error: "接口地址必须来自 api.videoparse.cn/home/api" };
+    }
+    var uid = String(url.searchParams.get("uid") || "").trim();
+    var key = String(url.searchParams.get("key") || "").trim();
+    if (!uid || !key) {
+      return { error: "接口地址缺少 uid 或 key" };
+    }
+    return { uid: uid, key: key, endpoint: endpointFrom(uid, key) };
+  }
+
+  function saveEndpoint(input, status) {
+    var parsed = parseEndpoint(input ? input.value : "");
+    if (parsed.error) {
+      setStatus(status, parsed.error, true);
+      return;
+    }
     try {
       var raw = JSON.parse(window.localStorage.getItem("banban.data.v1") || "{}");
       raw.settings = raw.settings || {};
       var previous = raw.settings.videoParserApi || {};
       raw.settings.videoParserApi = {
         ...previous,
-        uid: String(api.uid || ""),
-        key: String(api.key || ""),
-        username: credentials.username,
-        password: credentials.password,
-        qq: credentials.qq,
-        endpoint: endpoint(api.uid, api.key),
-        accountStatus: String(api.accountStatus || ""),
-        points: String(api.points || ""),
-        balance: String(api.balance || ""),
+        uid: parsed.uid,
+        key: parsed.key,
+        username: "",
+        password: "",
+        qq: "",
+        endpoint: parsed.endpoint,
+        accountStatus: "手动配置",
+        points: "",
+        balance: "",
         poolEnabled: false,
         poolAccounts: [],
       };
       window.localStorage.setItem("banban.data.v1", JSON.stringify(raw));
-      setStatus("注册并登录成功，正在刷新页面…", false);
+      setStatus(status, "接口地址已保存，正在刷新页面…", false);
       window.setTimeout(function () {
         window.location.reload();
       }, 500);
     } catch (error) {
-      setStatus("注册成功，但保存本地账号失败：" + error.message, true);
+      setStatus(status, "保存失败：" + error.message, true);
     }
-  }
-
-  function handleManualResult(action, data) {
-    if (!manualHandler) return;
-    var button = document.querySelector("#videoApiRegisterBtn");
-    if (action === "register") {
-      if (Number(data.status) !== 200) {
-        setStatus(data.msg || "注册失败", true);
-        setButton(button, "注册接口", false);
-        manualHandler = null;
-        window.__BANBAN_WEB_ACCOUNT_RESULT = null;
-        return;
-      }
-      setStatus("注册成功，正在自动登录…", false);
-      setButton(button, "正在自动登录…", true);
-      manualHandler.phase = "login";
-      window.BanbanNative.loginVideoParseUser(
-        manualHandler.credentials.username,
-        manualHandler.credentials.password
-      );
-      return;
-    }
-    if (action !== "login" || manualHandler.phase !== "login") return;
-    if (Number(data.status) !== 200 || !data.uid || !data.key) {
-      setStatus(data.msg || "注册成功，但自动登录失败，请手动登录", true);
-      setButton(button, "注册接口", false);
-      manualHandler = null;
-      window.__BANBAN_WEB_ACCOUNT_RESULT = null;
-      return;
-    }
-    finishRegistration(data, manualHandler.credentials);
-  }
-
-  function manualRegister() {
-    var button = document.querySelector("#videoApiRegisterBtn");
-    var username = document.querySelector("#videoApiRegUser")?.value.trim() || "";
-    var password = document.querySelector("#videoApiRegPass")?.value || "";
-    var qq = document.querySelector("#videoApiRegQQ")?.value.trim() || "";
-    if (!username || !password || !qq) {
-      setStatus("请填写用户名、密码和 QQ", true);
-      return;
-    }
-    if (!configured) {
-      setStatus("网页接口代理未配置，请先部署 Cloudflare Worker 并填写 web-api-config.js", true);
-      return;
-    }
-    manualHandler = {
-      phase: "register",
-      credentials: { username: username, password: password, qq: qq },
-    };
-    window.__banbanVideoParseResult = null;
-    window.__BANBAN_WEB_ACCOUNT_RESULT = handleManualResult;
-    setStatus("正在提交注册…", false);
-    setButton(button, "正在注册…", true);
-    window.BanbanNative.registerVideoParseUser(username, password, qq);
   }
 
   function configure() {
-    var registerButton = document.querySelector("#videoApiRegisterBtn");
-    if (!registerButton) return;
+    var auth = document.querySelector(".video-api-auth");
+    if (!auth) return;
+    if (document.querySelector("#webApiManualSection")) return;
 
-    [
-      "#videoApiRegUser",
-      "#videoApiRegPass",
-      "#videoApiRegQQ",
-      "#videoApiLoginUser",
-      "#videoApiLoginPass",
-    ].forEach(function (selector) {
-      var input = document.querySelector(selector);
-      if (!input) return;
-      input.readOnly = false;
-      input.removeAttribute("readonly");
-      input.setAttribute("aria-readonly", "false");
+    auth.hidden = true;
+
+    var previous =
+      (JSON.parse(window.localStorage.getItem("banban.data.v1") || "{}").settings || {})
+        .videoParserApi || {};
+
+    var panel = document.createElement("section");
+    panel.id = "webApiManualSection";
+    panel.className = "web-api-manual";
+    panel.innerHTML =
+      '<div class="web-api-manual-head">' +
+        "<h3>手动配置解析接口</h3>" +
+        "<span>iPhone 网页版</span>" +
+      "</div>" +
+      '<p class="web-api-manual-copy">网页版不提供注册和登录。请先到接口官网注册，复制解析接口地址后粘贴到这里。</p>' +
+      '<ol class="web-api-manual-steps">' +
+        "<li>打开接口官网，注册并登录。</li>" +
+        "<li>进入用户中心，找到 <b>UID</b> 和 <b>KEY</b>。</li>" +
+        "<li>复制解析接口地址，或按下面的格式拼接。</li>" +
+      "</ol>" +
+      '<a class="web-api-manual-link" href="' +
+        API_SITE +
+        '" target="_blank" rel="noopener">打开接口官网注册 / 登录</a>' +
+      '<code class="web-api-endpoint-example">https://api.videoparse.cn/home/api?type=dsp&amp;uid=你的UID&amp;key=你的KEY&amp;url=</code>' +
+      '<label class="web-api-endpoint-field">解析接口地址' +
+        '<input id="webApiEndpointInput" type="url" spellcheck="false" autocomplete="off" placeholder="粘贴以 https://api.videoparse.cn/home/api 开头的地址">' +
+      "</label>" +
+      '<button class="primary-button web-api-endpoint-save" id="webApiEndpointSave" type="button">保存接口地址</button>' +
+      '<p class="web-api-endpoint-status" id="webApiEndpointStatus" aria-live="polite"></p>';
+
+    var anchor = document.querySelector(".video-api-auth");
+    anchor.parentNode.insertBefore(panel, anchor);
+
+    var input = document.querySelector("#webApiEndpointInput");
+    var status = document.querySelector("#webApiEndpointStatus");
+    if (input && previous.endpoint) input.value = previous.endpoint;
+    document.querySelector("#webApiEndpointSave")?.addEventListener("click", function () {
+      saveEndpoint(input, status);
     });
-
-    var tab = document.querySelector("#videoApiTabRegister");
-    if (tab) tab.textContent = "注册";
-    var heading = document.querySelector("#videoApiRegisterPanel .video-api-section-head h3");
-    if (heading) heading.textContent = "注册接口";
-    var registerUser = document.querySelector("#videoApiRegUser");
-    var registerPass = document.querySelector("#videoApiRegPass");
-    var registerQQ = document.querySelector("#videoApiRegQQ");
-    if (registerUser) registerUser.placeholder = "手动输入接口用户名";
-    if (registerPass) registerPass.placeholder = "手动输入接口密码";
-    if (registerQQ) registerQQ.placeholder = "手动输入 QQ";
-
-    if (!registerButton.dataset.webManual) {
-      var clone = registerButton.cloneNode(true);
-      clone.dataset.webManual = "1";
-      clone.textContent = "注册接口";
-      clone.disabled = false;
-      registerButton.replaceWith(clone);
-      clone.addEventListener("click", manualRegister);
-      registerButton = clone;
-    }
-
-    var panel = document.querySelector("#videoApiRegisterPanel");
-    if (panel && !document.querySelector("#webApiProxyNote")) {
-      var note = document.createElement("p");
-      note.id = "webApiProxyNote";
-      note.className = "web-api-proxy-note";
-      note.textContent = configured
-        ? "网页端通过 Cloudflare Worker 代理注册接口。"
-        : "网页端注册需要先在 web-api-config.js 中填写 Cloudflare Worker 地址。";
-      panel.appendChild(note);
-    }
   }
 
   document.addEventListener("click", function (event) {
