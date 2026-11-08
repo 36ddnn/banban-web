@@ -7,7 +7,7 @@
 - 项目名称：班伴 · 工作周记
 - 英文名称：Banban
 - 作者：无忧易连
-- 源码仓库：<https://gitee.com/dingyiyun/banban>
+- 源码仓库：<[https://github.com/36ddnn/banban-web](https://github.com/36ddnn/banban-web)>
 - 网页版本：部署后由 Gitee Pages 提供访问
 - 技术形态：原生 HTML / CSS / JavaScript PWA，Android WebView 外壳使用 Java
 
@@ -94,6 +94,7 @@
 ## 9. 联系方式
 
 - Gitee 仓库：<https://gitee.com/dingyiyun/banban>
+- Github 仓库：<https://github.com/36ddnn/banban-web>
 - 问题反馈：<https://work.weixin.qq.com/kfid/kfc77f35cf189540caf>
 
 ## 10. 声明更新
