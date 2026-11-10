@@ -1,12 +1,20 @@
 const API_ORIGIN = "https://api.videoparse.cn";
-const ALLOWED_ORIGINS = [
-  "https://36ddnn.github.io",
-  "http://127.0.0.1:8001",
-  "http://localhost:8001",
+const MEDIA_HOSTS = [
+  "douyinpic.com",
+  "douyinvod.com",
+  "douyin.com",
+  "byteimg.com",
+  "bytecdn.cn",
+  "ixigua.com",
+  "pstatp.com",
+  "snssdk.com",
+  "amemv.com",
+  "tiktokcdn.com",
+  "douyinlive.com",
 ];
 
 function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowed = origin || "*";
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Credentials": "true",
@@ -35,6 +43,63 @@ function copyCookies(apiResponse, responseHeaders) {
   });
 }
 
+function mediaAllowed(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  return MEDIA_HOSTS.some((suffix) => host === suffix || host.endsWith("." + suffix));
+}
+
+function safeFilename(value) {
+  return (
+    String(value || "班伴媒体")
+      .replace(/[\\/:*?"<>|]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80) || "班伴媒体"
+  );
+}
+
+async function downloadMedia(url, cors) {
+  const target = url.searchParams.get("target") || "";
+  const filename = safeFilename(url.searchParams.get("filename") || "");
+  let mediaUrl;
+  try {
+    mediaUrl = new URL(target);
+  } catch (error) {
+    return new Response("媒体地址无效", { status: 400, headers: cors });
+  }
+  if (mediaUrl.protocol !== "https:" || !mediaAllowed(mediaUrl.hostname)) {
+    return new Response("不允许下载这个媒体地址", { status: 400, headers: cors });
+  }
+  let media;
+  try {
+    media = await fetch(mediaUrl.toString(), {
+      method: "GET",
+      headers: {
+        Referer: "https://www.douyin.com/",
+        "User-Agent":
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+        Accept: "*/*",
+      },
+    });
+  } catch (error) {
+    return new Response("媒体下载失败", { status: 502, headers: cors });
+  }
+  if (!media.ok || !media.body) {
+    return new Response("媒体不可下载", { status: media.status || 502, headers: cors });
+  }
+  const headers = new Headers(cors);
+  headers.set(
+    "Content-Type",
+    media.headers.get("Content-Type") || "application/octet-stream"
+  );
+  headers.set(
+    "Content-Disposition",
+    `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`
+  );
+  headers.set("Cache-Control", "no-store");
+  return new Response(media.body, { status: 200, headers });
+}
+
 export default {
   async fetch(request) {
     const origin = request.headers.get("Origin") || "";
@@ -45,6 +110,9 @@ export default {
     }
 
     const url = new URL(request.url);
+    if (url.pathname === "/download") {
+      return downloadMedia(url, cors);
+    }
     const allowedPath =
       url.pathname.startsWith("/user/") || url.pathname === "/home/api";
     if (!allowedPath) {

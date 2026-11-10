@@ -1,10 +1,10 @@
 /* 班伴 BANBAN — offline shell */
-const CACHE_NAME = "banban-shell-v2.2.35-web6";
+const CACHE_NAME = "banban-shell-v2.2.46-web2";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
-  "./css/styles.css?v=2.2.35",
-  "./js/app.js?v=2.2.35",
+  "./css/styles.css?v=2.2.46",
+  "./js/app.js?v=2.2.46",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -13,10 +13,14 @@ const SHELL_ASSETS = [
   "./icons/favicon.svg",
   "./icons/wechat-qr.jpg",
   "./icons/download-qr.png",
-  "./web-guard.css?v=2",
-  "./web-guard.js?v=3",
+  "./icons/favicon-32.png",
+  "./icons/video-splash.png",
+  "./icons/whale-jingjing.png",
+  "./web-guard.css?v=3",
+  "./web-guard.js?v=4",
   "./web-api-shim.js?v=2",
   "./web-account.js?v=3",
+  "./web-brand.js?v=1",
 ];
 
 self.addEventListener("install", (event) => {
