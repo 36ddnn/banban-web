@@ -18,6 +18,8 @@ web-api-config.js                Cloudflare Worker 地址
 web-api-shim.js                  网页接口桥接
 web-account.js                   网页手动注册
 web-brand.js                     网页端「关于班伴」软件名
+web-share.js                     iOS 分享视频给微信好友
+functions/                       Cloudflare Pages 同源解析/下载函数
 worker/                          Cloudflare Worker 接口代理
 LICENSE                          MIT License
 OPEN_SOURCE_NOTICE.md            开源声明
@@ -243,6 +245,22 @@ https://dry-brook-757e.cheyiem.workers.dev
 如果重新部署了新的 Worker，改掉这一行并重新上传即可。
 
 如果暂时不配置 Worker，网页可以打开，但解析请求会提示「网页接口代理未配置」。
+
+## iPhone 分享视频给微信好友
+
+iOS 网页端不再显示「保存到本地」，备选解析路线结果中的按钮改为：
+
+```text
+分享给微信好友
+```
+
+点击后会：
+
+1. 通过 `/api/download` 或 Worker `/download` 读取视频文件
+2. 调用 iOS 原生分享面板
+3. 选择「微信」后转发给微信好友
+
+视频文件需要正常通过下载代理读取。如果代理不可用，会回退为分享视频链接。
 
 ## 网页解析代理
 

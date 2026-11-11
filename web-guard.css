@@ -336,3 +336,27 @@ body.wg-locked {
 .web-api-endpoint-status.is-error {
   color: #b3261e;
 }
+
+.web-share-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 130000;
+  max-width: calc(100vw - 40px);
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(20, 60, 52, 0.94);
+  color: #fffaf0;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.web-share-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

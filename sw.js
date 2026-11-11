@@ -1,5 +1,5 @@
 /* 班伴 BANBAN — offline shell */
-const CACHE_NAME = "banban-shell-v2.2.46-web2";
+const CACHE_NAME = "banban-shell-v2.2.46-web3";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -21,6 +21,7 @@ const SHELL_ASSETS = [
   "./web-api-shim.js?v=2",
   "./web-account.js?v=3",
   "./web-brand.js?v=1",
+  "./web-share.js?v=1",
 ];
 
 self.addEventListener("install", (event) => {
